@@ -36,6 +36,6 @@ data/2019-Oct.csv
 jars_dir
 project
 .bsp
-spark
+spark/**
 !spark/stream.py
 !spark/stream.ipynb
