@@ -1,6 +1,5 @@
 package com.schoen.fosproducer.service;
 
-
 import com.schoen.fosproducer.config.KafkaProducerConfiguration;
 import com.schoen.fosproducer.model.FosEventInput;
 import jakarta.annotation.PostConstruct;
@@ -18,6 +17,9 @@ import java.util.Collections;
 import java.util.Timer;
 import java.util.TimerTask;
 
+/*
+ * Service for producing events from the csv file to Kafka topic "producedEvents".
+ */
 @Service
 public class MessagePublisher {
 
@@ -42,33 +44,37 @@ public class MessagePublisher {
     }
 
     @PostConstruct
-    void publishRawEvents() throws InterruptedException {
-        LOG.info("Start publishing raw events...");
+    void publishEvents() throws InterruptedException {
+        LOG.info("Start publishing events...");
         FosEventInput nextFosEvent = fosEventReader.nextInput();
 
         final long startTime = nextFosEvent.getEventTime().toInstant(ZoneOffset.UTC).toEpochMilli();
         final long delaySeconds = delay * incrementValue * 1000L;
-        this.timeThreshold = startTime-delaySeconds-1;
+        timeThreshold = startTime-delaySeconds-1;
         startTimer();
 
+        //send events while there are still new ones available
         while (nextFosEvent != null){
             final long nextEventTime = nextFosEvent.getEventTime().toInstant(ZoneOffset.UTC).toEpochMilli();
+            //wait until the vent is ready to be sent
             while(nextEventTime>timeThreshold){
                 Thread.sleep(1000);
                 if(startTime>timeThreshold){
                     LOG.info(((startTime-timeThreshold)/1000)/incrementValue + " seconds until event production starts.");
                 }
             }
-            sendFosEventInputMessage(nextFosEvent.getInput());
+            //send the event
+            sendEventMessage(nextFosEvent.getInput());
+            //start waiting for the next event
             nextFosEvent = fosEventReader.nextInput();
         }
         LOG.info("End of file. Publishing events finished.");
     }
-
+    //Method for starting a timer, which will determine when events can be sent.
     private void startTimer(){
-        int period = 1000;
-        int incrementValue = this.incrementValue*1000;
-        Timer timer = new Timer();
+        final int period = 1000;
+        final int incrementValue = this.incrementValue*1000;
+        final Timer timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask()
         {
             public void run(){
@@ -77,7 +83,8 @@ public class MessagePublisher {
         }, 0, period);
     }
 
-    private void sendFosEventInputMessage(final String fosEventInput) {
+    //Method for sending event data to Kafka topic
+    private void sendEventMessage(final String fosEventInput) {
         final Message<String> message = new GenericMessage<>(fosEventInput, Collections.singletonMap(KafkaHeaders.TOPIC,"producedEvents"));
         kafkaTemplate.send(message);
         if(isPrintProducerLogs){

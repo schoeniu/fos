@@ -1,6 +1,13 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# In[ ]:
+
+
+#Command for convert .ipynb file to .py:
+#jupyter nbconvert stream.ipynb --to python
+
+
 # In[1]:
 
 
@@ -26,13 +33,14 @@ print(os.environ.get("PRODUCER_DATA_SEC_PER_REAL_SEC", ""))
 # In[3]:
 
 
+#Set submit args. Only needed when executed from jupyter notebook.
 os.environ['PYSPARK_SUBMIT_ARGS'] = '--packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.3.1,org.postgresql:postgresql:42.5.1  pyspark-shell'
-print(os.environ.get("PYSPARK_SUBMIT_ARGS", ""))
 
 
 # In[4]:
 
 
+#Initialize Spark session
 sparkSession = SparkSession \
         .builder \
         .master(SPARK_MASTER_URL) \
@@ -45,6 +53,7 @@ sparkSession.sparkContext.setLogLevel("ERROR")
 # In[5]:
 
 
+#Read events from Kafka producedEvents topic
 inDf = (
         sparkSession.readStream.format("kafka")
         .option("kafka.bootstrap.servers", KAFKA_BOOTSTRAP_SERVER)
@@ -58,6 +67,7 @@ inDf = (
 # In[6]:
 
 
+#Transform dataframe to an easily usable one
 valueDf = inDf.selectExpr("CAST(value as STRING)")
 
 spl = split(valueDf['value'], ',')
@@ -80,6 +90,7 @@ baseDf = baseDf.withColumn("price", baseDf["price"].cast(IntegerType()))
 # In[7]:
 
 
+#Query for aggregating metrics over eventTime window
 queryDf = baseDf.withWatermark("eventTime", TIME_WINDOW) \
     .groupBy(window(baseDf.eventTime, TIME_WINDOW,TIME_WINDOW)) \
     .agg(count(baseDf.eventType).alias('nr_of_events'),
@@ -98,7 +109,9 @@ queryDf = baseDf.withWatermark("eventTime", TIME_WINDOW) \
 # In[8]:
 
 
-def postgres_sink(data_frame, batch_id):
+#Define function for sending data to PostgreSQL DB and Kafka
+def sink(data_frame, batch_id):
+    #Prepare PostgreSQL DB settings
     dbname = 'postgres'
     dbuser = 'postgres'
     dbpass = 'postgres'
@@ -111,12 +124,16 @@ def postgres_sink(data_frame, batch_id):
         "user": dbuser,
         "password": dbpass
     }
+    #Format dataframe to match DB table
     df = data_frame.withColumn("start_event_time",data_frame['window'].start).withColumn("end_event_time",data_frame['window'].end)
     df = df.drop('window')
-    df = df.select("start_event_time","end_event_time","nr_of_events","nr_items_viewed","nr_items_put_in_cart","nr_items_sold","value_items_sold_in_cent","nr_users_active","nr_categories_viewed","nr_brands_viewed")
+    df = df.select("start_event_time","end_event_time","nr_of_events","nr_items_viewed","nr_items_put_in_cart", \
+                   "nr_items_sold","value_items_sold_in_cent","nr_users_active","nr_categories_viewed","nr_brands_viewed")
     df.persist()
+    #send to PostgreSQL DB
     df.write.jdbc(url=url, table="events", mode="append", properties=properties)
-    df.select(to_json(struct("start_event_time", "end_event_time", "nr_of_events")).alias("value")) \
+    #send to Kafka
+    df.select(to_json(struct("start_event_time", "end_event_time","nr_of_events")).alias("value")) \
       .write \
       .format("kafka") \
       .option("kafka.bootstrap.servers", KAFKA_BOOTSTRAP_SERVER) \
@@ -126,27 +143,17 @@ def postgres_sink(data_frame, batch_id):
     df.unpersist()
 
 
-
 # In[ ]:
 
 
+#Write aggregated metrics to PostgreSQL DB and Kafka 
 query = queryDf \
     .writeStream \
     .outputMode("update") \
     .option("truncate", "true")\
-    .foreachBatch(postgres_sink)\
+    .foreachBatch(sink)\
     .trigger(processingTime = TIME_TRIGGER)\
     .start()
 
-
 query.awaitTermination()
-
-    #.outputMode("update") \
-    #.format("console") \
-
-
-# In[ ]:
-
-
-
 

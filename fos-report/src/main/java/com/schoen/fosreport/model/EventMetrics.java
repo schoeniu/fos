@@ -8,7 +8,9 @@ import lombok.Data;
 
 import javax.validation.constraints.NotNull;
 
-
+/*
+ * JPA mapped object of aggregated event metrics.
+ */
 @Data
 @Entity
 @Table(name = "events")

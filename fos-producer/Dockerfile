@@ -2,11 +2,9 @@ FROM maven:3.8.3-openjdk-17 AS build
 
 WORKDIR /home/fos-producer
 
-# Fetch all dependencies
 COPY pom.xml .
 RUN mvn verify -DskipTests --fail-never
 
-# Build application
 COPY src ./src
 RUN mvn verify
 

@@ -5,16 +5,13 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import net.sf.jsefa.csv.annotation.CsvDataType;
 import net.sf.jsefa.csv.annotation.CsvField;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-import static java.lang.Float.isNaN;
-
+/*
+ * Model for reading the csv file. One FosEventInput.input contains one event.
+ */
 @NoArgsConstructor
 @ToString
 @Getter

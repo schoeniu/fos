@@ -12,7 +12,9 @@ import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
-
+/*
+ * Reader for reading the csv file.
+ */
 @Service
 public class FosEventReader {
 

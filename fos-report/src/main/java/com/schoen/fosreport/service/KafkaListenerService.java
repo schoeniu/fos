@@ -1,6 +1,5 @@
 package com.schoen.fosreport.service;
 
-
 import com.schoen.fosreport.dao.EventMetricsRepository;
 import com.schoen.fosreport.model.EventMetrics;
 import com.schoen.fosreport.model.EventWindow;
@@ -18,7 +17,9 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Optional;
 import java.util.UUID;
-
+/*
+ * Kafka listener. Consumes EventWindows, retrieves the associated eventMetrics from the DB and logs them.
+ */
 @AllArgsConstructor
 @NoArgsConstructor
 @EnableKafka
@@ -33,13 +34,13 @@ public class KafkaListenerService {
     private EventMetricsRepository eventMetricsRepository;
 
     @KafkaListener(topics = "availableDBEntries")
-    public void eventListener(final ConsumerRecord<UUID, EventWindow> consumerRecord) {
+    public void listenForEventWindow(final ConsumerRecord<UUID, EventWindow> consumerRecord) {
         final Optional<EventMetrics> eventMetrics = eventMetricsRepository.findById(consumerRecord.value());
         if(eventMetrics.isPresent()){
             printPretty(eventMetrics.get());
-
         }else {
-            LOGGER.warn(String.format("Metrics for events from %s to %s could not be found! May be messages from prior docker run."
+            LOGGER.warn(String.format("Metrics for events from %s to %s could not be found! " +
+                                        "May be messages from prior docker run."
                                         ,dateFormat.format(consumerRecord.value().getStart_event_time())
                                         ,dateFormat.format(consumerRecord.value().getEnd_event_time())));
         }
@@ -47,7 +48,7 @@ public class KafkaListenerService {
     }
 
     private void printPretty(final EventMetrics eventMetrics){
-        final  DecimalFormat decimalFormat =  new DecimalFormat();
+        final DecimalFormat decimalFormat =  new DecimalFormat();
         decimalFormat.setMaximumFractionDigits(2);
         decimalFormat.setMinimumFractionDigits(2);
         LOGGER.info(String.format(
@@ -73,7 +74,6 @@ public class KafkaListenerService {
                 ,eventMetrics.getNrUsersActive()
                 ,eventMetrics.getNrCategoriesViewed()
                 ,eventMetrics.getNrBrandsViewed()
-
         ));
     }
 }

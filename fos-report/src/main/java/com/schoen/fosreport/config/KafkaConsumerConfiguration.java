@@ -26,6 +26,9 @@ import org.springframework.kafka.support.serializer.JsonDeserializer;
 import java.util.HashMap;
 import java.util.Map;
 
+/*
+ * Kafka configuration beans for the Kafka consumer/listener.
+ */
 @Configuration
 @NoArgsConstructor
 public class KafkaConsumerConfiguration {
@@ -37,23 +40,23 @@ public class KafkaConsumerConfiguration {
 
     @Bean
     public ConsumerFactory<String, EventWindow> consumerFactory() {
-        Map<String, Object> properties = new HashMap<>();
+        final Map<String, Object> properties = new HashMap<>();
         properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
         properties.put(ConsumerConfig.GROUP_ID_CONFIG, "com.schoen");
         properties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
         properties.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, "60000");
         properties.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
-        LOG.info("Loaded: "+ properties);
-        ErrorHandlingDeserializer<String> headerErrorHandlingDeserializer
+        //LOG.info("Loaded: "+ properties);
+        final ErrorHandlingDeserializer<String> headerErrorHandlingDeserializer
                 = new ErrorHandlingDeserializer<>(new StringDeserializer());
-        ErrorHandlingDeserializer<EventWindow> errorHandlingDeserializer
-                = new ErrorHandlingDeserializer<>(new JsonDeserializer<>(EventWindow.class, objectMapper()));
+        final ErrorHandlingDeserializer<EventWindow> errorHandlingDeserializer
+                = new ErrorHandlingDeserializer<>(new JsonDeserializer<>(EventWindow.class, createObjectMapper()));
         return new DefaultKafkaConsumerFactory<>(properties, headerErrorHandlingDeserializer, errorHandlingDeserializer);
     }
 
     @Bean
     public KafkaListenerContainerFactory<?> kafkaListenerContainerFactory(ConsumerFactory<String, EventWindow> consumerFactory) {
-        ConcurrentKafkaListenerContainerFactory<String, EventWindow> kafkaListenerContainerFactory
+        final ConcurrentKafkaListenerContainerFactory<String, EventWindow> kafkaListenerContainerFactory
                 = new ConcurrentKafkaListenerContainerFactory<>();
         kafkaListenerContainerFactory.setConcurrency(1);
         kafkaListenerContainerFactory.setConsumerFactory(consumerFactory);
@@ -61,7 +64,7 @@ public class KafkaConsumerConfiguration {
         return kafkaListenerContainerFactory;
     }
 
-    private ObjectMapper objectMapper() {
+    private ObjectMapper createObjectMapper() {
         return Jackson2ObjectMapperBuilder.json()
                 .visibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
                 .featuresToDisable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)

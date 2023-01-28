@@ -10,6 +10,9 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 import java.sql.Timestamp;
 
+/*
+ * Primary key of JPA mapped object of aggregated event metrics.
+ */
 @Data
 @NoArgsConstructor
 @JsonDeserialize(builder = EventWindow.Builder.class)
@@ -27,7 +30,6 @@ public final class EventWindow implements Serializable {
         this.end_event_time = builder.end_event_time;
         this.nr_of_events = builder.nr_of_events;
     }
-
 
     @JsonPOJOBuilder
     static class Builder {

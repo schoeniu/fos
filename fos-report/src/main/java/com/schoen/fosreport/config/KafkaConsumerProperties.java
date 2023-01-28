@@ -1,11 +1,12 @@
 package com.schoen.fosreport.config;
 
-
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
-
+/*
+ * POJO for reading application.properties
+ */
 @ConfigurationProperties(prefix = "kafka")
 public class KafkaConsumerProperties {
 
