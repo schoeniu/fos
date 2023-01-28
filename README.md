@@ -13,7 +13,7 @@ a PostgreSQL DB for storing the metrics and a fos-report consumer microservice f
 <li>Download Docker Desktop (if not already installed) and make sure the docker deamon is running.</li>
 <li>Clone or download and unzip the repository.</li>
 <li>The repository includes only a small subset of data for development purposes, due to the full data set being 5GB in size. 
-For testing with the full data set please download '2019-Oct.csv' at [kaggle](https://www.kaggle.com/datasets/mkechinov/ecommerce-behavior-data-from-multi-category-store?resource=download&select=2019-Oct.csv).
+For testing with the full data set please download '2019-Oct.csv' at (https://www.kaggle.com/datasets/mkechinov/ecommerce-behavior-data-from-multi-category-store?resource=download&select=2019-Oct.csv).
 The file needs to be placed in the 'data' folder and the INPUT_FILE_NAME at the top of the .env needs to be adjusted to the new file name.
 </li>
 <li>You may change other configurations as desired, see configuration section.</li>
