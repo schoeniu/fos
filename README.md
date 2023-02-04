@@ -36,7 +36,7 @@ Perform <strong>docker compose down</strong> before trying again.
 </li>
 <li>
 Experiencing severe performance issues after running the application for longer times with a high PRODUCER_DATA_SEC_PER_REAL_SEC value ->
-Docker compose may experience performance leaks. The easiest way to resolve this, is just to restart the PC.
+Docker Desktop may experience performance leaks. The easiest way to resolve this, is just to restart the PC.
 </li>
 </ul>
 
