@@ -27,6 +27,7 @@ services:
     environment:
       KAFKA_ADVERTISED_HOST_NAME: 172.20.0.3
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_CREATE_TOPICS: "producedEvents:1:1,availableDBEntries:1:1"
     networks:
       fosnetwork:
         ipv4_address: 172.20.0.3
