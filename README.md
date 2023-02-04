@@ -22,6 +22,24 @@ The file needs to be placed in the 'data' folder and the INPUT_FILE_NAME at the 
 you should be able to observe in the opened shell fos-producer sending events and fos-report logging the aggregated metrics.</li>
 </ol>
 
+<h4>Trouble shooting</h4>
+Issues you may encounter and how to resolve.
+<ul>
+<li>
+You get a maven related error when fos-producer/fos-report are being built -> 
+this is an internet connectivity issues with maven central. 
+Simply trying again after a few seconds usually resolves it.
+</li>
+<li>
+The Kafka container crashes on startup -> you may have not shut down Kafka cleanly on the last time you ran the application.
+Perform <strong>docker compose down</strong> before trying again.
+</li>
+<li>
+Experiencing severe performance issues after running the application for longer times with a high PRODUCER_DATA_SEC_PER_REAL_SEC value ->
+Docker compose may experience performance leaks. The easiest way to resolve this, is just to restart the PC.
+</li>
+</ul>
+
 
 <h2>Configuration</h2>
 The following configurations can be adjusted in the .env file in the root of the project.
