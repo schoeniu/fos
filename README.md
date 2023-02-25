@@ -9,7 +9,9 @@ a PostgreSQL DB for storing the metrics and a fos-report consumer microservice f
 
 <h2>Architecture</h2>
 <h3>Components</h3>
+
 ![Architecture image](architecture.png)
+
 <ul>
 <li>
 <strong>fos-producer</strong>: Spring boot microservice, responsible for mocking user events and sending them to the producedEvents Kafak topic. 
@@ -31,6 +33,7 @@ The events table containing the data is purged on ever Docker container startup 
 </li>
 </ul>
 <h3>Data flow</h3>
+<p>
 Raw user events are created by fos-producer, reading them from the CSV file and sending them to the producedEvents topic.
 Spark continuously reads them and windows them per one second. This is a real world one second, meaning that independently of how fast the raw event production is configured, there will be always be one DB entry per second created.
 E.g. if PRODUCER_DATA_SEC_PER_REAL_SEC is set to 60, one DB entry contains the data which are timestamped within 60 seconds.
@@ -39,7 +42,7 @@ Because of the parallelism implemented in Spark, it might be the case that data 
 Unfortunately, PySpark structured streaming doesn't support UPSERT DB operations as of now, therefore a new DB entry for the window with a higher number of events will be created.
 After the saving the DB entry, Spark informs fos-report about the availability of the new data over the availableDBEntries topic. 
 Fos-report retrieves the DB entry and logs the following metrics, representing the final output:
-
+</p>
 <ul>
 <li>Timestamps from when to when the metrics are aggregated</li>
 <li>Number of events aggregated</li>
@@ -82,13 +85,12 @@ Simply trying again after a few seconds usually resolves it.
 </li>
 <li>
 The Kafka container crashes on startup -> you may have not shut down Kafka cleanly on the last time you ran the application.
-Perform
+Try again after performing
 
 ```
 docker compose down
 ```
 
-before trying again.
 </li>
 <li>
 Experiencing severe performance issues after running the application for longer times with a high PRODUCER_DATA_SEC_PER_REAL_SEC value ->
