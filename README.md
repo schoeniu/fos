@@ -93,7 +93,8 @@ docker compose down
 
 </li>
 <li>
-Experiencing severe performance issues after running the application for longer times with a high PRODUCER_DATA_SEC_PER_REAL_SEC value ->
+Experiencing severe performance issues, with fos-report not producing any output after running the application for longer times with a high PRODUCER_DATA_SEC_PER_REAL_SEC value.
+May also happen in the first run when the images are being pulled. ->
 Docker Desktop may experience performance leaks. The easiest way to resolve this is just to restart the PC.
 </li>
 </ul>
